@@ -2,10 +2,13 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import {
-  Engine, Scene, ArcRotateCamera, HemisphericLight,
+  Engine, Scene,
+  ArcRotateCamera,
+  HemisphericLight,
   Mesh, MeshBuilder,
+  StandardMaterial,
   Vector3,
-  Color4
+  Color3, Color4,
 } from "@babylonjs/core";
 // import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
 
@@ -22,47 +25,69 @@ class App {
   private _lpaddle: Mesh;
   private _rpaddle: Mesh;
 
+  private _belowPlane: Mesh;
+  private _perpendicularPlane: Mesh;
+
+  // Targets
+  private _pongTarget: Vector3;
+  private _mainMenuTarget: Vector3;
+  private _currentTarget: Vector3;
+
   // Game State
 
 
   constructor() {
-    // create the canvas html element and attach it to the webpage
-    this._canvas = this._createCanvas();
+    this._init();
+
     // initialize babylon this._scene and this._engine
     this._engine = new Engine(this._canvas, true);
     this._scene = new Scene(this._engine);
+    this._scene.clearColor = new Color4(0, 0, 0, 1);
+
     this._camera = new ArcRotateCamera("Camera",
-      (Math.PI / 2), (Math.PI / 2), 2, Vector3.Zero(),
+      Math.PI / 2,
+      Math.PI / 2,
+      2,
+      Vector3.Zero(),
       this._scene
     );
+    this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
+    this._scene.activeCamera = this._camera;
+
     this._light = new HemisphericLight("hemisphericLight",
       new Vector3(1, 1, 0),
       this._scene
     );
 
-    // Start Loading
-    this._engine.displayLoadingUI();
-    this._scene.detachControl();
-
-    // Create Objects
-    this._ball = MeshBuilder.CreateSphere("ball", { diameter: .1 }, this._scene);
-    this._lpaddle = MeshBuilder.CreateBox("lpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
-    this._rpaddle = MeshBuilder.CreateBox("rpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
-    this._ball.position = new Vector3(0, 0, 0);
-    this._lpaddle.position = new Vector3(-1.4, 0, 0);
-    this._rpaddle.position = new Vector3(1.4, 0, 0);
-
-    /// @brief Event Listeners
-    this._setupEvents();
-
-    // Done Loading
-    this._engine.hideLoadingUI();
-
     // Run the main render loop
     this._main();
   }
 
+  private async _main(): Promise<void> {
+    await this._init();
+
+    // Render Loop
+    this._engine.runRenderLoop(() => {
+      this._scene.render();
+    });
+  }
+
+  private async _init() {
+    // create the canvas html element and attach it to the webpage
+    this._canvas = this._createCanvas();
+
+    // Create Objects
+    this._createObjects();
+
+    /// Event Listeners
+    this._setupEvents();
+
+    // Init Targets
+    this._pongTarget = Vector3.Zero();
+    this._mainMenuTarget = new Vector3(0, -2 * Math.PI, 0);
+    this._currentTarget = this._pongTarget;
+  }
 
   private _createCanvas(): HTMLCanvasElement {
     // Commented out for development
@@ -103,23 +128,36 @@ class App {
     window.addEventListener("keydown", (ev) => {
       switch (ev.key) {
         case "ArrowUp":
-          this._lpaddle.position.y += paddleSpeed;
-          clampPaddle(this._lpaddle);
-          break;
-        case "ArrowDown":
-          this._lpaddle.position.y -= paddleSpeed;
-          clampPaddle(this._lpaddle);
-          break;
-        case "w":
           this._rpaddle.position.y += paddleSpeed;
           clampPaddle(this._rpaddle);
           break;
-        case "s":
+        case "ArrowDown":
           this._rpaddle.position.y -= paddleSpeed;
           clampPaddle(this._rpaddle);
           break;
+        case "w":
+          this._lpaddle.position.y += paddleSpeed;
+          clampPaddle(this._lpaddle);
+          break;
+        case "s":
+          this._lpaddle.position.y -= paddleSpeed;
+          clampPaddle(this._lpaddle);
+          break;
         default:
           break;
+      }
+    });
+
+    // Camera target switching with spacebar
+    window.addEventListener("keydown", (ev) => {
+      if (ev.code === "Space") {
+        // Toggle between pong and main menu targets
+        if (this._currentTarget === this._pongTarget) {
+          this._currentTarget = this._mainMenuTarget;
+        } else {
+          this._currentTarget = this._pongTarget;
+        }
+        this._camera.setTarget(this._currentTarget);
       }
     });
 
@@ -140,19 +178,35 @@ class App {
 
   }
 
-  private async _main(): Promise<void> {
-    // Initialize the application
-    await this._init();
+  private _createObjects(): void {
+    // Ball
+    this._ball = MeshBuilder.CreateSphere("ball", { diameter: .1 }, this._scene);
+    this._ball.position = new Vector3(0.1, 0, 0);
 
-    // Render Loop
-    this._engine.runRenderLoop(() => {
-      this._scene.clearColor = new Color4(0, 0, 0, 1);
+    // Paddles
+    this._lpaddle = MeshBuilder.CreateBox("lpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
+    this._rpaddle = MeshBuilder.CreateBox("rpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
+    this._lpaddle.position = new Vector3(-1.4, 0, 0);
+    this._rpaddle.position = new Vector3(1.4, 0, 0);
 
-      this._scene.render();
-    });
-  }
+    // Planes 
+    const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
+    belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
 
-  private async _init() {
+    this._belowPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
+    this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
+    this._belowPlane.position.y = -1; // Below the main plane
+    this._belowPlane.material = belowPlaneMaterial;
+
+    const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
+    perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
+
+    this._perpendicularPlane = MeshBuilder.CreatePlane("yxPlane", { size: 5 }, this._scene);
+    this._perpendicularPlane.rotation.x = (Math.PI / 2); // -90° around the Y axis (YZ plane)
+    this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
+    this._perpendicularPlane.rotation.z = (Math.PI / 2); // 90° around the Z axis (XZ plane) for perpendicular
+    this._perpendicularPlane.material = perpendicularPlaneMaterial;
+
   }
 
 }
