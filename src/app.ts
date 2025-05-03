@@ -33,7 +33,7 @@ class App {
       this._scene
     );
     this._camera.attachControl(this._canvas, true);
-    this._light = new HemisphericLight("light1",
+    this._light = new HemisphericLight("hemisphericLight",
       new Vector3(1, 1, 0),
       this._scene
     );
@@ -42,14 +42,49 @@ class App {
     this._engine.displayLoadingUI();
     this._scene.detachControl();
 
-    var sphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: .2 }, this._scene);
-    var lpaddle: Mesh = MeshBuilder.CreateBox("lpaddle", { width: .1, height: 1, depth: .1 }, this._scene);
-    var rpaddle: Mesh = MeshBuilder.CreateBox("rpaddle", { width: .1, height: 1, depth: .1 }, this._scene);
+    // Create Objects
+    var sphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: .1 }, this._scene);
+    var lpaddle: Mesh = MeshBuilder.CreateBox("lpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
+    var rpaddle: Mesh = MeshBuilder.CreateBox("rpaddle", { width: .1, height: 0.3, depth: .05 }, this._scene);
     sphere.position = new Vector3(0, 0, 0);
-    lpaddle.position = new Vector3(-1, 0, 0);
-    rpaddle.position = new Vector3(1, 0, 0);
+    lpaddle.position = new Vector3(-1.4, 0, 0);
+    rpaddle.position = new Vector3(1.4, 0, 0);
 
-    /// Event Listeners
+    /// @brief Event Listeners
+    // Paddles
+    const paddleSpeed = 0.07;
+    const paddleLimit = 0.66;
+
+    function clampPaddle(paddle: Mesh) {
+      if (paddle.position.y > paddleLimit) paddle.position.y = paddleLimit;
+      if (paddle.position.y < -paddleLimit) paddle.position.y = -paddleLimit;
+    }
+    window.addEventListener("keydown", (ev) => {
+      switch (ev.key) {
+        case "ArrowUp":
+          lpaddle.position.y += paddleSpeed;
+          clampPaddle(lpaddle);
+          break;
+        case "ArrowDown":
+          lpaddle.position.y -= paddleSpeed;
+          clampPaddle(lpaddle);
+          break;
+        case "w":
+          rpaddle.position.y += paddleSpeed;
+          clampPaddle(rpaddle);
+          break;
+        case "s":
+          rpaddle.position.y -= paddleSpeed;
+          clampPaddle(rpaddle);
+          break;
+        default:
+          break;
+      }
+    });
+
+    // Ball
+    const ballSpeed = 0.1;
+
     // hide/show the Inspector
     window.addEventListener("keydown", (ev) => {
       // Shift+Ctrl+Alt+I
@@ -61,7 +96,7 @@ class App {
         }
       }
     });
-    //
+
     // Done Loading
     this._engine.hideLoadingUI();
 
@@ -71,19 +106,18 @@ class App {
 
 
   private _createCanvas(): HTMLCanvasElement {
-
     // Commented out for development
-    // document.documentElement.style["overflow"] = "hidden";
-    // document.documentElement.style.overflow = "hidden";
-    // document.documentElement.style.width = "100%";
-    // document.documentElement.style.height = "100%";
-    // document.documentElement.style.margin = "0";
-    // document.documentElement.style.padding = "0";
-    // document.body.style.overflow = "hidden";
-    // document.body.style.width = "100%";
-    // document.body.style.height = "100%";
-    // document.body.style.margin = "0";
-    // document.body.style.padding = "0";
+    document.documentElement.style["overflow"] = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.width = "100%";
+    document.documentElement.style.height = "100%";
+    document.documentElement.style.margin = "0";
+    document.documentElement.style.padding = "0";
+    document.body.style.overflow = "hidden";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
 
     // Create the canvas html element and attach it to the webpage
     this._canvas = document.createElement("canvas");
