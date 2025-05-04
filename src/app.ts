@@ -9,14 +9,23 @@ import {
   StandardMaterial,
   Vector3,
   Color3, Color4,
+  UtilityLayerRenderer,
+  AxisDragGizmo,
 } from "@babylonjs/core";
-// import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
+import {
+  GUI3DManager,
+  StackPanel3D,
+  HolographicButton, Button3D,
+  TextBlock,
+} from "@babylonjs/gui";
 
 class App {
   // Global App
   private _scene: Scene;
   private _canvas: HTMLCanvasElement;
   private _engine: Engine;
+  private _gui3dManager: GUI3DManager;
+
   private _camera: ArcRotateCamera;
   private _light: HemisphericLight;
 
@@ -27,6 +36,8 @@ class App {
 
   private _belowPlane: Mesh;
   private _perpendicularPlane: Mesh;
+
+  // GUI Controls
 
   // Targets
   private _pongTarget: Vector3;
@@ -43,7 +54,9 @@ class App {
     this._engine = new Engine(this._canvas, true);
     this._scene = new Scene(this._engine);
     this._scene.clearColor = new Color4(0, 0, 0, 1);
+    this._gui3dManager = new GUI3DManager(this._scene);
 
+    const utilLayer = new UtilityLayerRenderer(this._scene);
     this._camera = new ArcRotateCamera("Camera",
       Math.PI / 2,
       Math.PI / 2,
@@ -53,7 +66,6 @@ class App {
     );
     this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
-    this._scene.activeCamera = this._camera;
 
     this._light = new HemisphericLight("hemisphericLight",
       new Vector3(1, 1, 0),
@@ -79,6 +91,9 @@ class App {
 
     // Create Objects
     this._createObjects();
+
+    // Create GUI Controls
+    this._addControls();
 
     /// Event Listeners
     this._setupEvents();
@@ -128,20 +143,20 @@ class App {
     window.addEventListener("keydown", (ev) => {
       switch (ev.key) {
         case "ArrowUp":
-          this._rpaddle.position.y += paddleSpeed;
-          clampPaddle(this._rpaddle);
-          break;
-        case "ArrowDown":
-          this._rpaddle.position.y -= paddleSpeed;
-          clampPaddle(this._rpaddle);
-          break;
-        case "w":
           this._lpaddle.position.y += paddleSpeed;
           clampPaddle(this._lpaddle);
           break;
-        case "s":
+        case "ArrowDown":
           this._lpaddle.position.y -= paddleSpeed;
           clampPaddle(this._lpaddle);
+          break;
+        case "w":
+          this._rpaddle.position.y += paddleSpeed;
+          clampPaddle(this._rpaddle);
+          break;
+        case "s":
+          this._rpaddle.position.y -= paddleSpeed;
+          clampPaddle(this._rpaddle);
           break;
         default:
           break;
@@ -175,7 +190,6 @@ class App {
         }
       }
     });
-
   }
 
   private _createObjects(): void {
@@ -189,7 +203,7 @@ class App {
     this._lpaddle.position = new Vector3(-1.4, 0, 0);
     this._rpaddle.position = new Vector3(1.4, 0, 0);
 
-    // Planes 
+    // Planes
     const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
     belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
 
@@ -206,8 +220,26 @@ class App {
     this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
     this._perpendicularPlane.rotation.z = (Math.PI / 2); // 90° around the Z axis (XZ plane) for perpendicular
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
-
   }
 
+  private _addControls(): void {
+    const mainPanel = new StackPanel3D();
+    mainPanel.position = new Vector3(0, -2, -1);
+    mainPanel.isVertical = true;
+    mainPanel.margin = 0.1;
+
+    this._gui3dManager.addControl(mainPanel);
+
+    const btn = new HolographicButton("Zedro");
+    mainPanel.addControl(btn);
+    const btnTxt = new TextBlock();
+    btnTxt.text = "Zedro";
+    btnTxt.color = "Purple";
+    btnTxt.fontSize = 44;
+    btn.content = btnTxt;
+    btn.node.rotate(Vector3.Up(), Math.PI);
+    btn.node.rotate(Vector3.Right(), Math.PI / 2);
+    btn.node.position = new Vector3(5, 6, 2);
+  }
 }
 new App();
