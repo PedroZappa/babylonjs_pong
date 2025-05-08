@@ -4,13 +4,15 @@ import "@babylonjs/loaders/glTF";
 import {
   Engine, Scene,
   ArcRotateCamera,
+  FreeCamera,
   HemisphericLight,
   Mesh, MeshBuilder,
   StandardMaterial,
   Vector3,
   Color3, Color4,
   UtilityLayerRenderer,
-  AxisDragGizmo,
+  Quaternion,
+  Animation,
 } from "@babylonjs/core";
 import {
   GUI3DManager,
@@ -26,7 +28,7 @@ class App {
   private _engine: Engine;
   private _gui3dManager: GUI3DManager;
 
-  private _camera: ArcRotateCamera;
+  private _camera: FreeCamera;
   private _light: HemisphericLight;
 
   // Scene Objects
@@ -57,14 +59,9 @@ class App {
     this._gui3dManager = new GUI3DManager(this._scene);
 
     const utilLayer = new UtilityLayerRenderer(this._scene);
-    this._camera = new ArcRotateCamera("Camera",
-      Math.PI / 2,
-      Math.PI / 2,
-      2,
-      Vector3.Zero(),
-      this._scene
-    );
-    this._camera.setTarget(Vector3.Zero());
+    this._camera = new FreeCamera("camera", new Vector3(0, 0, 3), this._scene);
+    this._camera.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
+    // this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
 
     this._light = new HemisphericLight("hemisphericLight",
@@ -100,8 +97,8 @@ class App {
 
     // Init Targets
     this._pongTarget = Vector3.Zero();
-    this._mainMenuTarget = new Vector3(0, -2 * Math.PI, 0);
-    this._currentTarget = this._pongTarget;
+    this._mainMenuTarget = new Vector3(Math.PI, 0, 0);
+    this._currentTarget = this._mainMenuTarget;
   }
 
   private _createCanvas(): HTMLCanvasElement {
@@ -169,10 +166,11 @@ class App {
         // Toggle between pong and main menu targets
         if (this._currentTarget === this._pongTarget) {
           this._currentTarget = this._mainMenuTarget;
+          this.animationCamera(this._mainMenuTarget);
         } else {
           this._currentTarget = this._pongTarget;
+          this.animationCamera(this._pongTarget);
         }
-        this._camera.setTarget(this._currentTarget);
       }
     });
 
@@ -240,6 +238,27 @@ class App {
     btn.node.rotate(Vector3.Up(), Math.PI);
     btn.node.rotate(Vector3.Right(), Math.PI / 2);
     btn.node.position = new Vector3(5, 6, 2);
+  }
+
+  private animationCamera(vec: Vector3): void {
+    let framerate = 20;
+
+    let animateRotation = new Animation("animRotation",
+      "rotationQuaternion",
+      framerate,
+      Animation.ANIMATIONTYPE_QUATERNION,
+      Animation.ANIMATIONLOOPMODE_CONSTANT
+    );
+    var pos = Quaternion.FromEulerAngles(vec.x, vec.y, vec.z);
+
+    let keyframeRotation = [];
+    keyframeRotation.push({ frame: 0, value: this._camera.rotationQuaternion.clone() });
+    keyframeRotation.push({ frame: 50, value: pos });
+    this._camera.rotationQuaternion = pos;
+    animateRotation.setKeys(keyframeRotation);
+
+    this._camera.animations = [animateRotation];
+    this._scene.beginAnimation(this._camera, 0, 50, false, 2);
   }
 }
 new App();
