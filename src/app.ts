@@ -1,5 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
+import {
+  Inspector,
+} from "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import {
   Engine, Scene,
@@ -61,7 +63,7 @@ class App {
     const utilLayer = new UtilityLayerRenderer(this._scene);
     this._camera = new FreeCamera("camera", new Vector3(0, 0, 3), this._scene);
     this._camera.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
-    // this._camera.setTarget(Vector3.Zero());
+    this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
 
     this._light = new HemisphericLight("hemisphericLight",
@@ -86,6 +88,9 @@ class App {
     // create the canvas html element and attach it to the webpage
     this._canvas = this._createCanvas();
 
+    // Create Inspector
+    Inspector.Show(this._scene, {});
+
     // Create Objects
     this._createObjects();
 
@@ -97,7 +102,7 @@ class App {
 
     // Init Targets
     this._pongTarget = Vector3.Zero();
-    this._mainMenuTarget = new Vector3(Math.PI, 0, 0);
+    this._mainMenuTarget = new Vector3(Math.PI / 2, 0, 0);
     this._currentTarget = this._mainMenuTarget;
   }
 
@@ -205,7 +210,7 @@ class App {
     const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
     belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
 
-    this._belowPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
+    this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 5 }, this._scene);
     this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
     this._belowPlane.position.y = -1; // Below the main plane
     this._belowPlane.material = belowPlaneMaterial;
@@ -213,7 +218,7 @@ class App {
     const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
     perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
 
-    this._perpendicularPlane = MeshBuilder.CreatePlane("yxPlane", { size: 5 }, this._scene);
+    this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
     this._perpendicularPlane.rotation.x = (Math.PI / 2); // -90° around the Y axis (YZ plane)
     this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
     this._perpendicularPlane.rotation.z = (Math.PI / 2); // 90° around the Z axis (XZ plane) for perpendicular
@@ -240,8 +245,13 @@ class App {
     btn.node.position = new Vector3(5, 6, 2);
   }
 
+/**
+ * Animates the camera's rotation to a specified target orientation.
+ * 
+ * @param vec - The target orientation as a Vector3, where x, y, and z represent Euler angles.
+ */
   private animationCamera(vec: Vector3): void {
-    let framerate = 20;
+    let framerate = 50;
 
     let animateRotation = new Animation("animRotation",
       "rotationQuaternion",
