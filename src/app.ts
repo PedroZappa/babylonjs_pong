@@ -44,9 +44,9 @@ class App {
   // GUI Controls
 
   // Targets
-  private _pongTarget: Vector3;
-  private _mainMenuTarget: Vector3;
-  private _currentTarget: Vector3;
+  private _pongTarget: Quaternion;
+  private _mainMenuTarget: Quaternion;
+  private _currentTarget: Quaternion;
 
   // Game State
 
@@ -101,9 +101,9 @@ class App {
     this._setupEvents();
 
     // Init Targets
-    this._pongTarget = Vector3.Zero();
-    this._mainMenuTarget = new Vector3(Math.PI / 2, 0, 0);
-    this._currentTarget = this._mainMenuTarget;
+    this._pongTarget = Quaternion.FromEulerAngles(0, 0, 0); // Front view
+	this._mainMenuTarget = Quaternion.FromEulerAngles(0, 0, 0);
+	this._currentTarget = this._mainMenuTarget;
   }
 
   private _createCanvas(): HTMLCanvasElement {
@@ -168,14 +168,14 @@ class App {
     // Camera target switching with spacebar
     window.addEventListener("keydown", (ev) => {
       if (ev.code === "Space") {
-        // Toggle between pong and main menu targets
-        if (this._currentTarget === this._pongTarget) {
-          this._currentTarget = this._mainMenuTarget;
-          this.animationCamera(this._mainMenuTarget);
-        } else {
-          this._currentTarget = this._pongTarget;
-          this.animationCamera(this._pongTarget);
-        }
+        ev.preventDefault(); // Prevent default space behavior
+
+		this._currentTarget = 
+			this._currentTarget === this._pongTarget 
+				? this._mainMenuTarget 
+				: this._pongTarget;
+		
+		this.animationCamera(this._currentTarget);
       }
     });
 
@@ -248,24 +248,25 @@ class App {
 /**
  * Animates the camera's rotation to a specified target orientation.
  * 
- * @param vec - The target orientation as a Vector3, where x, y, and z represent Euler angles.
+ * @param quat - The target orientation as a Vector3, where x, y, and z represent Euler angles.
  */
-  private animationCamera(vec: Vector3): void {
+  private animationCamera(quat: Quaternion): void {
     let framerate = 50;
 
-    let animateRotation = new Animation("animRotation",
+    let animateRotation = new Animation(
+	  "animRotation",
       "rotationQuaternion",
       framerate,
       Animation.ANIMATIONTYPE_QUATERNION,
       Animation.ANIMATIONLOOPMODE_CONSTANT
     );
-    var pos = Quaternion.FromEulerAngles(vec.x, vec.y, vec.z);
 
     let keyframeRotation = [];
     keyframeRotation.push({ frame: 0, value: this._camera.rotationQuaternion.clone() });
-    keyframeRotation.push({ frame: 50, value: pos });
-    this._camera.rotationQuaternion = pos;
+    keyframeRotation.push({ frame: 50, value: quat });
     animateRotation.setKeys(keyframeRotation);
+
+	this._scene.stopAnimation(this._camera);
 
     this._camera.animations = [animateRotation];
     this._scene.beginAnimation(this._camera, 0, 50, false, 2);
