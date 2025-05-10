@@ -18,8 +18,9 @@ import {
 } from "@babylonjs/core";
 import {
   GUI3DManager,
+  AdvancedDynamicTexture,
   StackPanel3D,
-  HolographicButton, Button3D,
+  HolographicButton, Button3D, Button,
   TextBlock,
 } from "@babylonjs/gui";
 
@@ -42,6 +43,7 @@ class App {
   private _perpendicularPlane: Mesh;
 
   // GUI Controls
+  private _mainMenu: AdvancedDynamicTexture;
 
   // Targets
   private _pongTarget: Quaternion;
@@ -102,8 +104,8 @@ class App {
 
     // Init Targets
     this._pongTarget = Quaternion.FromEulerAngles(0, 0, 0); // Front view
-	this._mainMenuTarget = Quaternion.FromEulerAngles(0, 0, 0);
-	this._currentTarget = this._mainMenuTarget;
+    this._mainMenuTarget = Quaternion.FromEulerAngles(0, 0, 0);
+    this._currentTarget = this._mainMenuTarget;
   }
 
   private _createCanvas(): HTMLCanvasElement {
@@ -170,12 +172,12 @@ class App {
       if (ev.code === "Space") {
         ev.preventDefault(); // Prevent default space behavior
 
-		this._currentTarget = 
-			this._currentTarget === this._pongTarget 
-				? this._mainMenuTarget 
-				: this._pongTarget;
-		
-		this.animationCamera(this._currentTarget);
+        this._currentTarget =
+          this._currentTarget === this._pongTarget
+            ? this._mainMenuTarget
+            : this._pongTarget;
+
+        this.animationCamera(this._currentTarget);
       }
     });
 
@@ -226,35 +228,34 @@ class App {
   }
 
   private _addControls(): void {
-    const mainPanel = new StackPanel3D();
-    mainPanel.position = new Vector3(0, -2, -1);
-    mainPanel.isVertical = true;
-    mainPanel.margin = 0.1;
+    this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
+    this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._perpendicularPlane, 1024, 1024);
 
-    this._gui3dManager.addControl(mainPanel);
-
-    const btn = new HolographicButton("Zedro");
-    mainPanel.addControl(btn);
-    const btnTxt = new TextBlock();
-    btnTxt.text = "Zedro";
-    btnTxt.color = "Purple";
-    btnTxt.fontSize = 44;
-    btn.content = btnTxt;
-    btn.node.rotate(Vector3.Up(), Math.PI);
-    btn.node.rotate(Vector3.Right(), Math.PI / 2);
-    btn.node.position = new Vector3(5, 6, 2);
+    var btn = Button.CreateSimpleButton("testButton", "Zedro");
+    btn.width = 0.2;
+    btn.height = 0.2;
+    btn.rotation = -Math.PI / 2;
+    btn.color = "Purple";
+    btn.background = "Green";
+    btn.fontSize = 44;
+    btn.thickness = 2;
+    btn.onPointerUpObservable.add(() => {
+      alert("Clicked");
+    });
+    
+    this._mainMenu.addControl(btn);
   }
 
-/**
- * Animates the camera's rotation to a specified target orientation.
- * 
- * @param quat - The target orientation as a Vector3, where x, y, and z represent Euler angles.
- */
+  /**
+   * Animates the camera's rotation to a specified target orientation.
+   * 
+   * @param quat - The target orientation as a Vector3, where x, y, and z represent Euler angles.
+   */
   private animationCamera(quat: Quaternion): void {
     let framerate = 50;
 
     let animateRotation = new Animation(
-	  "animRotation",
+      "animRotation",
       "rotationQuaternion",
       framerate,
       Animation.ANIMATIONTYPE_QUATERNION,
@@ -266,7 +267,7 @@ class App {
     keyframeRotation.push({ frame: 50, value: quat });
     animateRotation.setKeys(keyframeRotation);
 
-	this._scene.stopAnimation(this._camera);
+    this._scene.stopAnimation(this._camera);
 
     this._camera.animations = [animateRotation];
     this._scene.beginAnimation(this._camera, 0, 50, false, 2);
