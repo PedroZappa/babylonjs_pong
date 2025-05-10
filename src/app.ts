@@ -105,8 +105,8 @@ class App {
     this._setupEvents();
 
     // Init Targets
-    this._pongTarget = Quaternion.FromEulerAngles(0, 0, 0); // Front view
-    this._mainMenuTarget = Quaternion.FromEulerAngles(0, 0, 0);
+    this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, 0); // Front view
+    this._mainMenuTarget = Quaternion.FromEulerAngles(Math.PI / 2, Math.PI, 0);
     this._currentTarget = this._mainMenuTarget;
   }
 
