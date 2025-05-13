@@ -48,6 +48,7 @@ class App {
 
   // GUI Controls
   private _mainMenu: AdvancedDynamicTexture;
+  private _mainMenuPanel: StackPanel;
 
   // Position
   private _cameraPongPosition: Vector3;
@@ -112,6 +113,7 @@ class App {
 
     // Create Objects
     this._createObjects();
+    this._createHTML();
 
     // Create GUI Controls
     this._addControls();
@@ -247,6 +249,7 @@ class App {
 
   private _createHTML(): void {
     const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
+
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
     const div = document.createElement("div");
     div.innerHTML = `
@@ -255,20 +258,21 @@ class App {
       <button>Click me</button>
 `;
   }
+    
 
   private _addControls(): void {
     // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
     this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._perpendicularPlane, 1024, 1024);
     this._mainMenu.background = "red";
-    // Create a panel to organize UI elements
-    const panel = new StackPanel();
-    panel.width = "80%";
-    panel.height = "100%";
-    panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    panel.paddingTop = "500px";
-    panel.spacing = 20; // Vertical spacing between elements
-    this._mainMenu.addControl(panel);
+    // Create a _mainMenuPanel to organize UI elements
+    this._mainMenuPanel = new StackPanel();
+    this._mainMenuPanel.width = "80%";
+    this._mainMenuPanel.height = "100%";
+    this._mainMenuPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+    this._mainMenuPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    this._mainMenuPanel.paddingTop = "500px";
+    this._mainMenuPanel.spacing = 20; // Vertical spacing between elements
+    this._mainMenu.addControl(this._mainMenuPanel);
 
     // Add a title
     const title = new TextBlock();
@@ -276,7 +280,7 @@ class App {
     title.height = "60px";
     title.color = "navy";
     title.fontSize = 36;
-    panel.addControl(title);
+    this._mainMenuPanel.addControl(title);
 
     // Zedo Button
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
@@ -290,7 +294,7 @@ class App {
     btn.onPointerUpObservable.add(() => {
       alert("Clicked");
     });
-    panel.addControl(btn);
+    this._mainMenuPanel.addControl(btn);
   }
 
   /**
