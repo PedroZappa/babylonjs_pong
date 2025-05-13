@@ -20,9 +20,10 @@ import {
 import {
   GUI3DManager,
   AdvancedDynamicTexture,
-  StackPanel3D,
+  StackPanel3D, StackPanel,
   HolographicButton, Button3D, Button,
   TextBlock,
+	Control,
 } from "@babylonjs/gui";
 
 class App {
@@ -213,7 +214,6 @@ class App {
     // Planes
     const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
     belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
-
     this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 5 }, this._scene);
     this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
     this._belowPlane.position.y = -1; // Below the main plane
@@ -221,18 +221,33 @@ class App {
 
     const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
     perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
-
     this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
-    // this._perpendicularPlane.rotation.x = (Math.PI / 2); // -90° around the Y axis (YZ plane)
     this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
-    // this._perpendicularPlane.rotation.z = (Math.PI / 2); // 90° around the Z axis (XZ plane) for perpendicular
-    this._perpendicularPlane.rotation = Quaternion.FromEulerAngles(0, 0, Math.PI / 2).toEulerAngles();
+    this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, (Math.PI / 2)).toEulerAngles();
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
   }
 
   private _addControls(): void {
-    this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
+    // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
     this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._perpendicularPlane, 1024, 1024);
+		this._mainMenu.background = "red";
+		// Create a panel to organize UI elements
+		const panel = new StackPanel();
+		panel.width = "80%";
+		panel.height = "100%";
+		panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+		panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		panel.paddingTop = "50px";
+		panel.spacing = 20; // Vertical spacing between elements
+		this._mainMenu.addControl(panel);
+
+		// Add a title
+		const title = new TextBlock();
+		title.text = "Pong42";
+		title.height = "60px";
+		title.color = "navy";
+		title.fontSize = 36;
+		panel.addControl(title);
 
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
@@ -246,7 +261,7 @@ class App {
       alert("Clicked");
     });
 
-    this._mainMenu.addControl(btn);
+    panel.addControl(btn);
   }
 
   /**
