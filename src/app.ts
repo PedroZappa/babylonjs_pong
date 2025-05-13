@@ -227,7 +227,7 @@ class App {
     perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
     this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
     this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
-    this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, (Math.PI / 2)).toEulerAngles();
+    this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
   }
 
@@ -261,7 +261,7 @@ class App {
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
     btn.height = 0.2;
-    btn.rotation = Math.PI / 2;
+    btn.rotation = -Math.PI;
     btn.color = "Purple";
     btn.background = "Green";
     btn.fontSize = 44;
