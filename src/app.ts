@@ -48,6 +48,10 @@ class App {
   // GUI Controls
   private _mainMenu: AdvancedDynamicTexture;
 
+  // Position
+  private _cameraPongPosition: Vector3;
+  private _cameraMainMenuPosition: Vector3;
+
   // Targets
   private _pongTarget: Quaternion;
   private _mainMenuTarget: Quaternion;
@@ -64,9 +68,18 @@ class App {
     this._scene = new Scene(this._engine);
     this._scene.clearColor = new Color4(0, 0, 0, 1);
     this._gui3dManager = new GUI3DManager(this._scene);
-
     const utilLayer = new UtilityLayerRenderer(this._scene);
-    this._camera = new FreeCamera("camera", new Vector3(0, 0, 3), this._scene);
+
+    // Init Targets
+    this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, Math.PI); // Front view
+    this._mainMenuTarget = Quaternion.FromEulerAngles(Math.PI / 2, Math.PI, 0);
+    this._currentTarget = this._mainMenuTarget;
+    
+    // Init Positions
+    this._cameraPongPosition = new Vector3(0, 0, 3);
+    this._cameraMainMenuPosition = new Vector3(0, 3, 3);
+
+    this._camera = new FreeCamera("camera", this._cameraPongPosition, this._scene);
     this._camera.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
@@ -105,11 +118,6 @@ class App {
 
     /// Event Listeners
     this._setupEvents();
-
-    // Init Targets
-    this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, Math.PI); // Front view
-    this._mainMenuTarget = Quaternion.FromEulerAngles(Math.PI / 2, Math.PI, 0);
-    this._currentTarget = this._mainMenuTarget;
   }
 
   private _createCanvas(): HTMLCanvasElement {
@@ -175,16 +183,21 @@ class App {
     window.addEventListener("keydown", (ev) => {
       if (ev.code === "Space") {
         ev.preventDefault(); // Prevent default space behavior
-
         this._currentTarget =
           this._currentTarget === this._pongTarget
             ? this._mainMenuTarget
             : this._pongTarget;
 
         this.animationCamera(this._currentTarget);
-        this._scene.beginAnimation(this._camera, 0, 50, false, 2, () => {
-          console.log("Camera rotation after animation:", this._camera.rotation);
-        });
+
+        if (this._currentTarget === this._pongTarget) {
+          this._currentTarget = this._pongTarget;
+          this._camera.rotationQuaternion = this._pongTarget;
+        } else {
+          this._currentTarget = this._mainMenuTarget;
+          this._camera.rotationQuaternion = this._mainMenuTarget;
+        }
+
       }
     });
 
@@ -226,7 +239,7 @@ class App {
     const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
     perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
     this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
-    this._perpendicularPlane.position.set(0.0, -2, 2.5); // Adjust as needed
+    this._perpendicularPlane.position.set(0.0, -3, 2.5); // Adjust as needed
     this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
   }
@@ -244,9 +257,9 @@ class App {
     const panel = new StackPanel();
     panel.width = "80%";
     panel.height = "100%";
-    panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
     panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    panel.paddingTop = "50px";
+    panel.paddingTop = "500px";
     panel.spacing = 20; // Vertical spacing between elements
     this._mainMenu.addControl(panel);
 
@@ -261,7 +274,7 @@ class App {
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
     btn.height = 0.2;
-    btn.rotation = -Math.PI;
+    btn.rotation = 2 *Math.PI;
     btn.color = "Purple";
     btn.background = "Green";
     btn.fontSize = 44;
