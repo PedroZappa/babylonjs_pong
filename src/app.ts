@@ -271,6 +271,7 @@ class App {
     title.fontSize = 36;
     panel.addControl(title);
 
+    // Zedo Button
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
     btn.height = 0.2;
@@ -282,7 +283,6 @@ class App {
     btn.onPointerUpObservable.add(() => {
       alert("Clicked");
     });
-
     panel.addControl(btn);
   }
 
