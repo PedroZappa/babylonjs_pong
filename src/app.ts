@@ -257,8 +257,19 @@ class App {
       <p>This is a sample HTML mesh.</p>
       <button>Click me</button>
 `;
+    // Style the div (important for visibility)
+    div.style.width = "300px";
+    div.style.height = "200px";
+    div.style.backgroundColor = "white";
+    div.style.padding = "20px";
+    div.style.color = "black";
+
+    // Position/Scale/Rotate the mesh in your scene
+    htmlMeshDiv.position = new Vector3(0, -3, 2);
+    htmlMeshDiv.scaling = new Vector3(1, 1, 1);
+    htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
   }
-    
+
 
   private _addControls(): void {
     // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
