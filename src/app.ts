@@ -3,6 +3,7 @@ import {
   Inspector,
 } from "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
+// import "@babylonjs/core/addons";
 import {
   Engine, Scene,
   ArcRotateCamera,
@@ -23,7 +24,7 @@ import {
   StackPanel3D, StackPanel,
   HolographicButton, Button3D, Button,
   TextBlock,
-	Control,
+  Control,
 } from "@babylonjs/gui";
 
 class App {
@@ -106,7 +107,7 @@ class App {
     this._setupEvents();
 
     // Init Targets
-    this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, 0); // Front view
+    this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, Math.PI); // Front view
     this._mainMenuTarget = Quaternion.FromEulerAngles(Math.PI / 2, Math.PI, 0);
     this._currentTarget = this._mainMenuTarget;
   }
@@ -181,6 +182,9 @@ class App {
             : this._pongTarget;
 
         this.animationCamera(this._currentTarget);
+        this._scene.beginAnimation(this._camera, 0, 50, false, 2, () => {
+          console.log("Camera rotation after animation:", this._camera.rotation);
+        });
       }
     });
 
@@ -227,27 +231,32 @@ class App {
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
   }
 
+  private _createHTML(): void {
+    // const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
+    // const htmlMeshDiv = new ADDONS.HtmlMeshDiv();
+  }
+
   private _addControls(): void {
     // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
     this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._perpendicularPlane, 1024, 1024);
-		this._mainMenu.background = "red";
-		// Create a panel to organize UI elements
-		const panel = new StackPanel();
-		panel.width = "80%";
-		panel.height = "100%";
-		panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-		panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-		panel.paddingTop = "50px";
-		panel.spacing = 20; // Vertical spacing between elements
-		this._mainMenu.addControl(panel);
+    this._mainMenu.background = "red";
+    // Create a panel to organize UI elements
+    const panel = new StackPanel();
+    panel.width = "80%";
+    panel.height = "100%";
+    panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    panel.paddingTop = "50px";
+    panel.spacing = 20; // Vertical spacing between elements
+    this._mainMenu.addControl(panel);
 
-		// Add a title
-		const title = new TextBlock();
-		title.text = "Pong42";
-		title.height = "60px";
-		title.color = "navy";
-		title.fontSize = 36;
-		panel.addControl(title);
+    // Add a title
+    const title = new TextBlock();
+    title.text = "Pong42";
+    title.height = "60px";
+    title.color = "navy";
+    title.fontSize = 36;
+    panel.addControl(title);
 
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
