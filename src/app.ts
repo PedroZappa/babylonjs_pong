@@ -3,10 +3,8 @@ import {
   Inspector,
 } from "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-// import "@babylonjs/core/addons";
 import {
   Engine, Scene,
-  ArcRotateCamera,
   FreeCamera,
   DynamicTexture,
   HemisphericLight,
@@ -26,6 +24,9 @@ import {
   TextBlock,
   Control,
 } from "@babylonjs/gui";
+import {
+  HtmlMeshRenderer, HtmlMesh
+} from "@babylonjs/addons/htmlMesh";
 
 class App {
   // Global App
@@ -74,7 +75,7 @@ class App {
     this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, Math.PI); // Front view
     this._mainMenuTarget = Quaternion.FromEulerAngles(Math.PI / 2, Math.PI, 0);
     this._currentTarget = this._mainMenuTarget;
-    
+
     // Init Positions
     this._cameraPongPosition = new Vector3(0, 0, 3);
     this._cameraMainMenuPosition = new Vector3(0, 3, 3);
@@ -245,8 +246,14 @@ class App {
   }
 
   private _createHTML(): void {
-    // const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
-    // const htmlMeshDiv = new ADDONS.HtmlMeshDiv();
+    const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
+    const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <h1>Yo yo yo!!!</h1>
+      <p>This is a sample HTML mesh.</p>
+      <button>Click me</button>
+`;
   }
 
   private _addControls(): void {
@@ -275,7 +282,7 @@ class App {
     var btn = Button.CreateSimpleButton("testButton", "Zedro");
     btn.width = 0.2;
     btn.height = 0.2;
-    btn.rotation = 2 *Math.PI;
+    btn.rotation = 2 * Math.PI;
     btn.color = "Purple";
     btn.background = "Green";
     btn.fontSize = 44;
@@ -373,4 +380,4 @@ class App {
     }
   }
 };
-new App();
+new App()
