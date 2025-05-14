@@ -68,7 +68,7 @@ class App {
     // initialize babylon this._scene and this._engine
     this._engine = new Engine(this._canvas, true);
     this._scene = new Scene(this._engine);
-    this._scene.clearColor = new Color4(0, 0, 0, 1);
+    this._scene.clearColor = new Color4(0, 0, 0, 0);
     this._gui3dManager = new GUI3DManager(this._scene);
     const utilLayer = new UtilityLayerRenderer(this._scene);
 
@@ -82,6 +82,7 @@ class App {
     this._cameraMainMenuPosition = new Vector3(0, 3, 3);
 
     this._camera = new FreeCamera("camera", this._cameraPongPosition, this._scene);
+		this._camera.fov = 1.2; // Narrower FOV reduces perspective distortion
     this._camera.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
@@ -264,15 +265,15 @@ class App {
     div.style.backgroundColor = "white";
     // div.style.padding = "20px";
     div.style.color = "yellow";
-		div.style.zIndex = "10"; // Higher z-index
+		div.style.zIndex = "1000"; // Higher z-index
+	
 		htmlMeshDiv.setContent(div, 3, 2); // Width and height in scene units
-		//
+		
     // Position/Scale/Rotate the mesh in your scene
-    htmlMeshDiv.position = new Vector3(0, -2.9, 2);
+    htmlMeshDiv.position = new Vector3(0, -2.9, 4.5);
     htmlMeshDiv.scaling = new Vector3(1, 1, 1);
     htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
   }
-
 
   private _addControls(): void {
     // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
