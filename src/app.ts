@@ -121,6 +121,7 @@ class App {
 
     /// Event Listeners
     this._setupEvents();
+    this.animationCamera(this._currentTarget);
   }
 
   private _createCanvas(): HTMLCanvasElement {
