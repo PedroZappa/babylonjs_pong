@@ -259,14 +259,16 @@ class App {
       <button>Click me</button>
 `;
     // Style the div (important for visibility)
-    div.style.width = "300px";
-    div.style.height = "200px";
+    div.style.width = "100px";
+    div.style.height = "100px";
     div.style.backgroundColor = "white";
-    div.style.padding = "20px";
-    div.style.color = "black";
-
+    // div.style.padding = "20px";
+    div.style.color = "yellow";
+		div.style.zIndex = "10"; // Higher z-index
+		htmlMeshDiv.setContent(div, 3, 2); // Width and height in scene units
+		//
     // Position/Scale/Rotate the mesh in your scene
-    htmlMeshDiv.position = new Vector3(0, -3, 2);
+    htmlMeshDiv.position = new Vector3(0, -2.9, 2);
     htmlMeshDiv.scaling = new Vector3(1, 1, 1);
     htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
   }
