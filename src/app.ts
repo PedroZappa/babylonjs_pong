@@ -69,6 +69,10 @@ class App {
     this._engine = new Engine(this._canvas, true);
     this._scene = new Scene(this._engine);
     this._scene.clearColor = new Color4(0, 0, 0, 0);
+    this._scene.createDefaultEnvironment({
+      createGround: false,
+      skyboxSize: 1000
+    });
     this._gui3dManager = new GUI3DManager(this._scene);
     const utilLayer = new UtilityLayerRenderer(this._scene);
 
@@ -82,7 +86,7 @@ class App {
     this._cameraMainMenuPosition = new Vector3(0, 3, 3);
 
     this._camera = new FreeCamera("camera", this._cameraPongPosition, this._scene);
-		this._camera.fov = 1.2; // Narrower FOV reduces perspective distortion
+    this._camera.fov = 1.2; // Narrower FOV reduces perspective distortion
     this._camera.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._camera.setTarget(Vector3.Zero());
     this._camera.attachControl(this._canvas, true);
@@ -236,15 +240,15 @@ class App {
     // Planes
     const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
     belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
-    this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 5 }, this._scene);
+    this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 7 }, this._scene);
     this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
     this._belowPlane.position.y = -1; // Below the main plane
     this._belowPlane.material = belowPlaneMaterial;
 
     const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
     perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
-    this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 5 }, this._scene);
-    this._perpendicularPlane.position.set(0.0, -3, 2.5); // Adjust as needed
+    this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 7 }, this._scene);
+    this._perpendicularPlane.position.set(0.0, -3.1, 2.5); // Adjust as needed
     this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
     this._perpendicularPlane.material = perpendicularPlaneMaterial;
   }
@@ -259,20 +263,22 @@ class App {
       <p>This is a sample HTML mesh.</p>
       <button>Click me</button>
 `;
-    // Style the div (important for visibility)
     div.style.width = "100px";
     div.style.height = "100px";
-    div.style.backgroundColor = "white";
+    div.style.backgroundColor = "purple";
+    div.style.textAlign = 'center';
+    div.style.fontSize = '100px';
     // div.style.padding = "20px";
     div.style.color = "yellow";
-		div.style.zIndex = "1000"; // Higher z-index
-	
-		htmlMeshDiv.setContent(div, 3, 2); // Width and height in scene units
-		
+    div.style.zIndex = "1000"; // Higher z-index
+
+    htmlMeshDiv.setContent(div, 4, 4);
+
     // Position/Scale/Rotate the mesh in your scene
-    htmlMeshDiv.position = new Vector3(0, -2.9, 4.5);
+    htmlMeshDiv.position = new Vector3(0, 0, 0);
     htmlMeshDiv.scaling = new Vector3(1, 1, 1);
-    htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
+    htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
+    // htmlMeshDiv.parent = this._perpendicularPlane;
   }
 
   private _addControls(): void {
