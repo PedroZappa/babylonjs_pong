@@ -38,24 +38,28 @@ DIST_PATH		= dist
 
 ##@ Compilation Rules 🏗
 
-all: build	
+all: start	
 
-build: deps	## Build Project
+build: deps			## Build Project
 	npm run build
 
-start: all
+start: build		## Start Project
 	npm run start
 
-deps: install-typescript
+deps: setup-typescript setup-babylon
 
-install-typescript:
-	@echo "$(YEL)Trying to install $(BLU)TypeScript$(D)"
+setup-typescript:
+	@echo "$(YEL)Setting up $(BLU)TypeScript$(D)"
 	@if command -v tsc >/dev/null 2>&1; then \
 		echo "TypeScript is already installed on this system"; \
 	else \
 		echo "Installing TypeScript globally..."; \
 		sudo npm install -g typescript; \
 	fi
+
+setup-babylon:
+	@echo "$(YEL)Setting up $(BLU)Babylon.js$(D)"
+	npm install --save-dev @babylonjs/core @babylonjs/addons @babylonjs/inspector
 
 ##@ Test Rules 🧪
 
