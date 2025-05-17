@@ -27,6 +27,15 @@ import {
 import {
   HtmlMeshRenderer, HtmlMesh
 } from "@babylonjs/addons/htmlMesh";
+// HTML Content
+let mainMenuHTML = '';
+try {
+  const resHTML = await fetch('/main-menu.html');
+  if (!resHTML.ok) throw new Error('Failed to load HTML');
+  mainMenuHTML = await resHTML.text();
+} catch (err) {
+  console.error('Error loading HTML:', err);
+}
 
 class App {
   // Global App
@@ -44,7 +53,7 @@ class App {
   private _rpaddle: Mesh;
 
   private _belowPlane: Mesh;
-  private _perpendicularPlane: Mesh;
+  private _mainMenuPlane: Mesh;
 
   // GUI Controls
   private _mainMenu: AdvancedDynamicTexture;
@@ -63,7 +72,8 @@ class App {
 
 
   constructor() {
-    this._init();
+    // create the canvas html element and attach it to the webpage
+    this._canvas = this._createCanvas();
 
     // initialize babylon this._scene and this._engine
     this._engine = new Engine(this._canvas, true);
@@ -110,15 +120,15 @@ class App {
   }
 
   private async _init() {
-    // create the canvas html element and attach it to the webpage
-    this._canvas = this._createCanvas();
 
     // Create Inspector
-    Inspector.Show(this._scene, {});
+    Inspector.Show(this._scene, {
+      overlay: true,
+      enablePopup: true,
+    });
 
     // Create Objects
     this._createObjects();
-    this._createHTML();
 
     // Create GUI Controls
     this._addControls();
@@ -153,79 +163,6 @@ class App {
     return this._canvas;
   }
 
-  private _setupEvents(): void {
-    window.addEventListener("resize", () => {
-      this._engine.resize();
-    });
-    // Paddles
-    const paddleSpeed = 0.07;
-    const paddleLimit = 0.66;
-
-    function clampPaddle(paddle: Mesh) {
-      if (paddle.position.y > paddleLimit) paddle.position.y = paddleLimit;
-      if (paddle.position.y < -paddleLimit) paddle.position.y = -paddleLimit;
-    }
-    window.addEventListener("keydown", (ev) => {
-      switch (ev.key) {
-        case "ArrowUp":
-          this._lpaddle.position.y += paddleSpeed;
-          clampPaddle(this._lpaddle);
-          break;
-        case "ArrowDown":
-          this._lpaddle.position.y -= paddleSpeed;
-          clampPaddle(this._lpaddle);
-          break;
-        case "w":
-          this._rpaddle.position.y += paddleSpeed;
-          clampPaddle(this._rpaddle);
-          break;
-        case "s":
-          this._rpaddle.position.y -= paddleSpeed;
-          clampPaddle(this._rpaddle);
-          break;
-        default:
-          break;
-      }
-    });
-
-    // Camera target switching with spacebar
-    window.addEventListener("keydown", (ev) => {
-      if (ev.code === "Space") {
-        ev.preventDefault(); // Prevent default space behavior
-        this._currentTarget =
-          this._currentTarget === this._pongTarget
-            ? this._mainMenuTarget
-            : this._pongTarget;
-
-        this.animationCamera(this._currentTarget);
-
-        if (this._currentTarget === this._pongTarget) {
-          this._currentTarget = this._pongTarget;
-          this._camera.rotationQuaternion = this._pongTarget;
-        } else {
-          this._currentTarget = this._mainMenuTarget;
-          this._camera.rotationQuaternion = this._mainMenuTarget;
-        }
-
-      }
-    });
-
-    // Ball
-    const ballSpeed = 0.1;
-
-    // hide/show the Inspector
-    window.addEventListener("keydown", (ev) => {
-      // Shift+Ctrl+Alt+I
-      if (ev.shiftKey && ev.ctrlKey && ev.altKey && (ev.key === "I" || ev.key === "i")) {
-        if (this._scene.debugLayer.isVisible()) {
-          this._scene.debugLayer.hide();
-        } else {
-          this._scene.debugLayer.show();
-        }
-      }
-    });
-  }
-
   private _createObjects(): void {
     // Ball
     this._ball = MeshBuilder.CreateSphere("ball", { diameter: .1 }, this._scene);
@@ -238,31 +175,20 @@ class App {
     this._rpaddle.position = new Vector3(1.4, 0, 0);
 
     // Planes
-    const belowPlaneMaterial = new StandardMaterial("belowPlaneMat", this._scene);
-    belowPlaneMaterial.diffuseColor = new Color3(0, 1, 0); // Green
+    // Pong Plane
+    const pongPlane = new StandardMaterial("belowPlaneMat", this._scene);
+    pongPlane.diffuseColor = new Color3(0, 1, 0); // Green
     this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 7 }, this._scene);
     this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
     this._belowPlane.position.y = -1; // Below the main plane
-    this._belowPlane.material = belowPlaneMaterial;
+    this._belowPlane.material = pongPlane;
 
-    const perpendicularPlaneMaterial = new StandardMaterial("perpPlaneMat", this._scene);
-    perpendicularPlaneMaterial.diffuseColor = new Color3(1, 0, 0); // Red
-    this._perpendicularPlane = MeshBuilder.CreatePlane("xzPlane", { size: 7 }, this._scene);
-    this._perpendicularPlane.position.set(0.0, -3.1, 2.5); // Adjust as needed
-    this._perpendicularPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
-    this._perpendicularPlane.material = perpendicularPlaneMaterial;
-  }
-
-  private _createHTML(): void {
+    // Main Menu
     const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
 
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
     const div = document.createElement("div");
-    div.innerHTML = `
-      <h1>Yo yo yo!!!</h1>
-      <p>This is a sample HTML mesh.</p>
-      <button>Click me</button>
-`;
+    div.innerHTML = mainMenuHTML
     div.style.width = "100px";
     div.style.height = "100px";
     div.style.backgroundColor = "purple";
@@ -277,45 +203,56 @@ class App {
     // Position/Scale/Rotate the mesh in your scene
     htmlMeshDiv.position = new Vector3(0, 0, 0);
     htmlMeshDiv.scaling = new Vector3(1, 1, 1);
-    htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
-    // htmlMeshDiv.parent = this._perpendicularPlane;
+    htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
+    // htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
+
+    const mainMenuPlaneMat = new StandardMaterial("perpPlaneMat", this._scene);
+    mainMenuPlaneMat.diffuseColor = new Color3(1, 0, 0); // Red
+    this._mainMenuPlane = MeshBuilder.CreatePlane("mainMenuPlane", { size: 7 }, this._scene);
+    this._mainMenuPlane.position.set(0.0, -3.1, 2.5); // Adjust as needed
+    this._mainMenuPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
+    this._mainMenuPlane.material = mainMenuPlaneMat;
+    htmlMeshDiv.parent = this._mainMenuPlane;
+  }
+
+  private _createHTML(): void {
   }
 
   private _addControls(): void {
-    // this._perpendicularPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
-    this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._perpendicularPlane, 1024, 1024);
-    this._mainMenu.background = "red";
-    // Create a _mainMenuPanel to organize UI elements
-    this._mainMenuPanel = new StackPanel();
-    this._mainMenuPanel.width = "80%";
-    this._mainMenuPanel.height = "100%";
-    this._mainMenuPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    this._mainMenuPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    this._mainMenuPanel.paddingTop = "500px";
-    this._mainMenuPanel.spacing = 20; // Vertical spacing between elements
-    this._mainMenu.addControl(this._mainMenuPanel);
-
-    // Add a title
-    const title = new TextBlock();
-    title.text = "Pong42";
-    title.height = "60px";
-    title.color = "navy";
-    title.fontSize = 36;
-    this._mainMenuPanel.addControl(title);
-
-    // Zedo Button
-    var btn = Button.CreateSimpleButton("testButton", "Zedro");
-    btn.width = 0.2;
-    btn.height = 0.2;
-    btn.rotation = 2 * Math.PI;
-    btn.color = "Purple";
-    btn.background = "Green";
-    btn.fontSize = 44;
-    btn.thickness = 2;
-    btn.onPointerUpObservable.add(() => {
-      alert("Clicked");
-    });
-    this._mainMenuPanel.addControl(btn);
+    // this._mainMenuPlane.billboardMode = Mesh.BILLBOARDMODE_ALL; // GUI Always face camera
+    // this._mainMenu = AdvancedDynamicTexture.CreateForMesh(this._mainMenuPlane, 1024, 1024);
+    // this._mainMenu.background = "red";
+    // // Create a _mainMenuPanel to organize UI elements
+    // this._mainMenuPanel = new StackPanel();
+    // this._mainMenuPanel.width = "80%";
+    // this._mainMenuPanel.height = "100%";
+    // this._mainMenuPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+    // this._mainMenuPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    // this._mainMenuPanel.paddingTop = "500px";
+    // this._mainMenuPanel.spacing = 20; // Vertical spacing between elements
+    // this._mainMenu.addControl(this._mainMenuPanel);
+    //
+    // // Add a title
+    // const title = new TextBlock();
+    // title.text = "Pong42";
+    // title.height = "60px";
+    // title.color = "navy";
+    // title.fontSize = 36;
+    // this._mainMenuPanel.addControl(title);
+    //
+    // // Zedo Button
+    // var btn = Button.CreateSimpleButton("testButton", "Zedro");
+    // btn.width = 0.2;
+    // btn.height = 0.2;
+    // btn.rotation = 2 * Math.PI;
+    // btn.color = "Purple";
+    // btn.background = "Green";
+    // btn.fontSize = 44;
+    // btn.thickness = 2;
+    // btn.onPointerUpObservable.add(() => {
+    //   alert("Clicked");
+    // });
+    // this._mainMenuPanel.addControl(btn);
   }
 
   /**
@@ -404,5 +341,79 @@ class App {
       showAxis(10);
     }
   }
+
+  private _setupEvents(): void {
+    window.addEventListener("resize", () => {
+      this._engine.resize();
+    });
+    // Paddles
+    const paddleSpeed = 0.07;
+    const paddleLimit = 0.66;
+
+    function clampPaddle(paddle: Mesh) {
+      if (paddle.position.y > paddleLimit) paddle.position.y = paddleLimit;
+      if (paddle.position.y < -paddleLimit) paddle.position.y = -paddleLimit;
+    }
+    window.addEventListener("keydown", (ev) => {
+      switch (ev.key) {
+        case "ArrowUp":
+          this._lpaddle.position.y += paddleSpeed;
+          clampPaddle(this._lpaddle);
+          break;
+        case "ArrowDown":
+          this._lpaddle.position.y -= paddleSpeed;
+          clampPaddle(this._lpaddle);
+          break;
+        case "w":
+          this._rpaddle.position.y += paddleSpeed;
+          clampPaddle(this._rpaddle);
+          break;
+        case "s":
+          this._rpaddle.position.y -= paddleSpeed;
+          clampPaddle(this._rpaddle);
+          break;
+        default:
+          break;
+      }
+    });
+
+    // Camera target switching with spacebar
+    window.addEventListener("keydown", (ev) => {
+      if (ev.code === "Space") {
+        ev.preventDefault(); // Prevent default space behavior
+        this._currentTarget =
+          this._currentTarget === this._pongTarget
+            ? this._mainMenuTarget
+            : this._pongTarget;
+
+        this.animationCamera(this._currentTarget);
+
+        if (this._currentTarget === this._pongTarget) {
+          this._currentTarget = this._pongTarget;
+          this._camera.rotationQuaternion = this._pongTarget;
+        } else {
+          this._currentTarget = this._mainMenuTarget;
+          this._camera.rotationQuaternion = this._mainMenuTarget;
+        }
+
+      }
+    });
+
+    // Ball
+    const ballSpeed = 0.1;
+
+    // hide/show the Inspector
+    window.addEventListener("keydown", (ev) => {
+      // Shift+Ctrl+Alt+I
+      if (ev.shiftKey && ev.ctrlKey && ev.altKey && (ev.key === "I" || ev.key === "i")) {
+        if (this._scene.debugLayer.isVisible()) {
+          this._scene.debugLayer.hide();
+        } else {
+          this._scene.debugLayer.show();
+        }
+      }
+    });
+  }
+
 };
 new App()

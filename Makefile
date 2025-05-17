@@ -33,6 +33,12 @@ NODE_PATH		= node_modules
 DIST_PATH		= dist
 
 #==============================================================================#
+#                                   CMDS                                       #
+#==============================================================================#
+
+RM					= rm -rf
+
+#==============================================================================#
 #                                  RULES                                       #
 #==============================================================================#
 
@@ -40,13 +46,18 @@ DIST_PATH		= dist
 
 all: start	
 
-build: deps			## Build Project
-	npm run build
+deps: setup-typescript setup-babylon
+
+build:					## Build Project
+	@if [ ! -d "$(DIST_PATH)" ]; then \
+		make deps; \
+		npm run build; \
+	else \
+		echo " $(RED)$(D) [$(GRN)Project already built!$(D)]"; \
+	fi
 
 start: build		## Start Project
 	npm run start
-
-deps: setup-typescript setup-babylon
 
 setup-typescript:
 	@echo "$(YEL)Setting up $(BLU)TypeScript$(D)"
@@ -60,6 +71,8 @@ setup-typescript:
 setup-babylon:
 	@echo "$(YEL)Setting up $(BLU)Babylon.js$(D)"
 	npm install --save-dev @babylonjs/core @babylonjs/addons @babylonjs/inspector
+	@echo "$(YEL)Setting up $(BLU)Raw-loader$(D) for loading HTML files"
+	npm install --save-dev raw-loader html-loader
 
 ##@ Test Rules 🧪
 
@@ -87,8 +100,9 @@ clean: 				## Remove object files
 	fi
 
 fclean: clean			## Remove executable and .gdbinit
-	@if [ -f "$(NAME)" ]; then \
-		$(RM) $(NAME); \
+	@if [ -d "node_modules" ]; then \
+		$(RM) $(DIST_PATH); \
+		$(RM) $(NODE_PATH); \
 		echo "* $(YEL)Removing $(CYA)$(NAME)$(D) file: $(_SUCCESS)"; \
 	else \
 		echo " $(RED)$(D) [$(GRN)Nothing to be fcleaned!$(D)]"; \
