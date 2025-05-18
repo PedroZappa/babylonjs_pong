@@ -206,8 +206,9 @@ class App {
     htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
     // htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
 
-    const mainMenuPlaneMat = new StandardMaterial("perpPlaneMat", this._scene);
-    mainMenuPlaneMat.diffuseColor = new Color3(1, 0, 0); // Red
+    const mainMenuPlaneMat = new StandardMaterial("mainMenuPlaneMat", this._scene);
+    mainMenuPlaneMat.diffuseColor = new Color3(0, 0, 0); // Black
+    mainMenuPlaneMat.alpha = 0; // Transparent
     this._mainMenuPlane = MeshBuilder.CreatePlane("mainMenuPlane", { size: 7 }, this._scene);
     this._mainMenuPlane.position.set(0.0, -3.1, 2.5); // Adjust as needed
     this._mainMenuPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
