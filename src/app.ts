@@ -36,6 +36,8 @@ try {
 } catch (err) {
   console.error('Error loading HTML:', err);
 }
+import './tailwind.css'; // Add this at the top
+
 
 class App {
   // Global App
@@ -189,8 +191,8 @@ class App {
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
     const div = document.createElement("div");
     div.innerHTML = mainMenuHTML
-    div.style.width = "100px";
-    div.style.height = "100px";
+    div.style.width = "200px";
+    div.style.height = "200px";
     div.style.backgroundColor = "purple";
     div.style.textAlign = 'center';
     div.style.fontSize = '100px';
@@ -198,12 +200,12 @@ class App {
     div.style.color = "yellow";
     div.style.zIndex = "1000"; // Higher z-index
 
-    htmlMeshDiv.setContent(div, 4, 4);
+    htmlMeshDiv.setContent(div, 4, 2);
 
     // Position/Scale/Rotate the mesh in your scene
-    htmlMeshDiv.position = new Vector3(0, 0, 0);
-    htmlMeshDiv.scaling = new Vector3(1, 1, 1);
-    htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
+    // htmlMeshDiv.position = new Vector3(0, 0, 0);
+    // htmlMeshDiv.scaling = new Vector3(1, 1, 1);
+    // htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
     // htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
 
     const mainMenuPlaneMat = new StandardMaterial("mainMenuPlaneMat", this._scene);

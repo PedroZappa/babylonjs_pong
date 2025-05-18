@@ -46,7 +46,7 @@ RM					= rm -rf
 
 all: start	
 
-deps: setup-typescript setup-babylon
+deps: setup-typescript setup-babylon setup-tailwind
 
 build:					## Build Project
 	@if [ ! -d "$(DIST_PATH)" ]; then \
@@ -75,6 +75,14 @@ setup-babylon:
 	npm install --save-dev @babylonjs/core @babylonjs/addons @babylonjs/inspector
 	@echo "$(YEL)Setting up $(BLU)Raw-loader$(D) & $(BLU)Html-loader$(D) for loading HTML files"
 	npm install --save-dev raw-loader html-loader
+
+setup-tailwind:
+	@echo "$(YEL)Setting up $(RED)PostCSS$(D) for $(BLU)TailwindCSS$(D)"
+	npm install -D tailwindcss@3 postcss postcss-loader autoprefixer css-loader style-loader
+	?@if [ ! -f "tailwind.config.js" || ! -f "postcss.config.js" ]; then \
+		@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D) config files"; \
+		npx tailwindcss init -p; \
+	fi
 
 ##@ Test Rules 🧪
 
