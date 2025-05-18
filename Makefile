@@ -83,7 +83,7 @@ setup-babylon:
 	npm install --save-dev raw-loader html-loader
 
 setup-tailwind:
-	@echo "$(YEL)Setting up $(RED)PostCSS$(D) for $(BLU)TailwindCSS$(D)"
+	@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D)"
 	npm install -D tailwindcss @tailwindcss/vite
 	@if [[ ! -f "tailwind.config.js" || ! -f "postcss.config.js" ]]; then \
 		@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D) config files"; \
@@ -101,7 +101,9 @@ test_all:						## Run All tests
 ##@ Clean-up Rules
 
 clean: 				## Remove
-	@echo "*** $(YEL)Removing $(MAG)$(NAME)$(D) and deps $(YEL)object files$(D)"
+	@echo "*** $(YEL)Removing $(MAG)$(NAME)$(D) and deps $(YEL)temp project files$(D)"
+	$(RM) package-lock.jso0D3/TEST/babylonjs_pong
+
 	@if [ -d "$(NODE_PATH)" ] || [ -d "$(DIST_PATH)" ]; then \
 		if [ -d "$(NODE_PATH)" ]; then \
 			$(RM) $(NODE_PATH); \
