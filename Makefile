@@ -85,7 +85,7 @@ setup-babylon:
 setup-tailwind:
 	@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D)"
 	npm install -D tailwindcss @tailwindcss/vite
-	@if [[ ! -f "tailwind.config.js" || ! -f "postcss.config.js" ]]; then \
+	@if [[ ! -f "tailwind.config.js" ]]; then \
 		@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D) config files"; \
 		npx tailwindcss init -p; \
 	fi

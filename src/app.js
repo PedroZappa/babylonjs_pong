@@ -3,7 +3,7 @@ import { Inspector, } from "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import { Engine, Scene, FreeCamera, DynamicTexture, HemisphericLight, MeshBuilder, StandardMaterial, Vector3, Color3, Color4, UtilityLayerRenderer, Quaternion, Animation, } from "@babylonjs/core";
 import { GUI3DManager, } from "@babylonjs/gui";
-import { HtmlMeshRenderer, HtmlMesh } from "@babylonjs/addons/htmlMesh";
+import { HtmlMeshRenderer, HtmlMesh, FitStrategy } from "@babylonjs/addons/htmlMesh";
 // HTML Content
 let mainMenuHTML = '';
 try {
@@ -19,6 +19,7 @@ import './tailwind.css'; // Add this at the top
 class App {
     // Game State
     constructor() {
+        this._mainMenuHTML = mainMenuHTML;
         // create the canvas html element and attach it to the webpage
         this._canvas = this._createCanvas();
         // initialize babylon this._scene and this._engine
@@ -30,6 +31,7 @@ class App {
             skyboxSize: 1000
         });
         this._gui3dManager = new GUI3DManager(this._scene);
+        const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
         const utilLayer = new UtilityLayerRenderer(this._scene);
         // Init Targets
         this._pongTarget = Quaternion.FromEulerAngles(Math.PI, 0, Math.PI); // Front view
@@ -104,22 +106,21 @@ class App {
         const pongPlane = new StandardMaterial("belowPlaneMat", this._scene);
         pongPlane.diffuseColor = new Color3(0, 1, 0); // Green
         this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 7 }, this._scene);
+        this._belowPlane.material = pongPlane;
         this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
         this._belowPlane.position.y = -1; // Below the main plane
-        this._belowPlane.material = pongPlane;
         // Main Menu
-        const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
-        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
+        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv", { captureOnPointerEnter: true, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
         const div = document.createElement("div");
-        div.innerHTML = mainMenuHTML;
-        div.style.width = "200px";
-        div.style.height = "200px";
-        div.style.backgroundColor = "purple";
-        div.style.textAlign = 'center';
-        div.style.fontSize = '100px';
-        // div.style.padding = "20px";
-        div.style.color = "yellow";
-        div.style.zIndex = "1000"; // Higher z-index
+        div.innerHTML = this._mainMenuHTML;
+        // div.style.width = "200px";
+        // div.style.height = "200px";
+        // div.style.backgroundColor = "purple";
+        // div.style.textAlign = 'center';
+        // div.style.fontSize = '100px';
+        // // div.style.padding = "20px";
+        // // div.style.color = "yellow";
+        // div.style.zIndex = "1000"; // Higher z-index
         htmlMeshDiv.setContent(div, 4, 2);
         // Position/Scale/Rotate the mesh in your scene
         // htmlMeshDiv.position = new Vector3(0, 0, 0);

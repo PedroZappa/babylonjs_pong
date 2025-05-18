@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --open",
     "build": "tsc && vite build",
-    "preview": "tsc && vite build && vite preview --host --open"
+    "preview": "tsc && vite build && vite preview --host --open",
+    "build:css": "NODE_ENV=production tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify"
   },
   "repository": {
     "type": "git",

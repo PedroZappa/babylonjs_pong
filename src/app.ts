@@ -15,6 +15,8 @@ import {
   UtilityLayerRenderer,
   Quaternion,
   Animation,
+  ActionManager,
+  ExecuteCodeAction
 } from "@babylonjs/core";
 import {
   GUI3DManager,
@@ -25,7 +27,8 @@ import {
   Control,
 } from "@babylonjs/gui";
 import {
-  HtmlMeshRenderer, HtmlMesh
+  HtmlMeshRenderer, HtmlMesh,
+  FitStrategy
 } from "@babylonjs/addons/htmlMesh";
 // HTML Content
 let mainMenuHTML = '';
@@ -36,7 +39,7 @@ try {
 } catch (err) {
   console.error('Error loading HTML:', err);
 }
-import './tailwind.css'; // Add this at the top
+import './styles.css'; // Add this at the top
 
 
 class App {
@@ -56,6 +59,7 @@ class App {
 
   private _belowPlane: Mesh;
   private _mainMenuPlane: Mesh;
+  private _mainMenuHTML: string = mainMenuHTML;
 
   // GUI Controls
   private _mainMenu: AdvancedDynamicTexture;
@@ -86,6 +90,7 @@ class App {
       skyboxSize: 1000
     });
     this._gui3dManager = new GUI3DManager(this._scene);
+    const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
     const utilLayer = new UtilityLayerRenderer(this._scene);
 
     // Init Targets
@@ -122,7 +127,6 @@ class App {
   }
 
   private async _init() {
-
     // Create Inspector
     Inspector.Show(this._scene, {
       overlay: true,
@@ -181,32 +185,25 @@ class App {
     const pongPlane = new StandardMaterial("belowPlaneMat", this._scene);
     pongPlane.diffuseColor = new Color3(0, 1, 0); // Green
     this._belowPlane = MeshBuilder.CreatePlane("xyPlane", { size: 7 }, this._scene);
+    this._belowPlane.material = pongPlane;
     this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
     this._belowPlane.position.y = -1; // Below the main plane
-    this._belowPlane.material = pongPlane;
 
     // Main Menu
-    const htmlMeshRenderer = new HtmlMeshRenderer(this._scene);
-
-    const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv");
+    const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv",
+      { captureOnPointerEnter: true, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
     const div = document.createElement("div");
-    div.innerHTML = mainMenuHTML
-    div.style.width = "200px";
-    div.style.height = "200px";
-    div.style.backgroundColor = "purple";
-    div.style.textAlign = 'center';
-    div.style.fontSize = '100px';
-    // div.style.padding = "20px";
-    div.style.color = "yellow";
-    div.style.zIndex = "1000"; // Higher z-index
+    div.innerHTML = this._mainMenuHTML
+    // div.style.width = "200px";
+    // div.style.height = "200px";
+    // div.style.backgroundColor = "purple";
+    // div.style.textAlign = 'center';
+    // div.style.fontSize = '100px';
+    // // div.style.padding = "20px";
+    // // div.style.color = "yellow";
+    // div.style.zIndex = "1000"; // Higher z-index
 
     htmlMeshDiv.setContent(div, 4, 2);
-
-    // Position/Scale/Rotate the mesh in your scene
-    // htmlMeshDiv.position = new Vector3(0, 0, 0);
-    // htmlMeshDiv.scaling = new Vector3(1, 1, 1);
-    // htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
-    // htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
 
     const mainMenuPlaneMat = new StandardMaterial("mainMenuPlaneMat", this._scene);
     mainMenuPlaneMat.diffuseColor = new Color3(0, 0, 0); // Black
@@ -216,6 +213,11 @@ class App {
     this._mainMenuPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
     this._mainMenuPlane.material = mainMenuPlaneMat;
     htmlMeshDiv.parent = this._mainMenuPlane;
+
+    const button = div.querySelector('#button');
+    if (button) {
+      button.setAttribute('data-bjs-metadata', JSON.stringify({ isButton: true }));
+    }
   }
 
   private _createHTML(): void {
@@ -416,6 +418,26 @@ class App {
         }
       }
     });
+
+    this._mainMenuPlane.actionManager = new ActionManager(this._scene);
+    this._mainMenuPlane.actionManager.registerAction(
+      new ExecuteCodeAction(
+        ActionManager.OnPickTrigger,
+        (evt) => {
+          const pick = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+          if (pick?.pickedMesh?.metadata?.isButton) {
+            this._toggleCameraTarget();
+          }
+        }
+      )
+    );
+  }
+
+  private _toggleCameraTarget(): void {
+    this._currentTarget = this._currentTarget === this._pongTarget
+      ? this._mainMenuTarget
+      : this._pongTarget;
+    this.animationCamera(this._currentTarget);
   }
 
 };
