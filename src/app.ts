@@ -16,7 +16,8 @@ import {
   Quaternion,
   Animation,
   ActionManager,
-  ExecuteCodeAction
+  ExecuteCodeAction, 
+  PointerEventTypes,
 } from "@babylonjs/core";
 import {
   GUI3DManager,
@@ -191,17 +192,12 @@ class App {
 
     // Main Menu
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv",
-      { captureOnPointerEnter: true, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
+      { captureOnPointerEnter: false, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
     const div = document.createElement("div");
     div.innerHTML = this._mainMenuHTML
     // div.style.width = "200px";
     // div.style.height = "200px";
-    // div.style.backgroundColor = "purple";
-    // div.style.textAlign = 'center';
-    // div.style.fontSize = '100px';
-    // // div.style.padding = "20px";
-    // // div.style.color = "yellow";
-    // div.style.zIndex = "1000"; // Higher z-index
+    div.style.textAlign = 'center';
 
     htmlMeshDiv.setContent(div, 4, 2);
 
@@ -213,11 +209,6 @@ class App {
     this._mainMenuPlane.rotation = Quaternion.FromEulerAngles((Math.PI / 2), 0, Math.PI).toEulerAngles();
     this._mainMenuPlane.material = mainMenuPlaneMat;
     htmlMeshDiv.parent = this._mainMenuPlane;
-
-    const button = div.querySelector('#button');
-    if (button) {
-      button.setAttribute('data-bjs-metadata', JSON.stringify({ isButton: true }));
-    }
   }
 
   private _createHTML(): void {
@@ -419,12 +410,22 @@ class App {
       }
     });
 
+    this._scene.onPointerObservable.add((pointerInfo) => {
+      if (pointerInfo.type === PointerEventTypes.POINTERPICK) {
+        const pick = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+        if (pick?.pickedMesh?.metadata?.isButton) {
+          this._toggleCameraTarget();
+        }
+      }
+    });
+
     this._mainMenuPlane.actionManager = new ActionManager(this._scene);
     this._mainMenuPlane.actionManager.registerAction(
       new ExecuteCodeAction(
         ActionManager.OnPickTrigger,
         (evt) => {
           const pick = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+          console.log(pick);
           if (pick?.pickedMesh?.metadata?.isButton) {
             this._toggleCameraTarget();
           }
