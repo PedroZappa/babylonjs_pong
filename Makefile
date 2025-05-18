@@ -44,22 +44,28 @@ RM					= rm -rf
 
 ##@ Compilation Rules 🏗
 
-all: start	
+all: dev	
 
-deps: setup-typescript setup-babylon setup-tailwind
+deps: setup-vite setup-typescript setup-babylon setup-tailwind
 
 build:					## Build Project
-	@if [ ! -d "$(DIST_PATH)" ]; then \
+	@if [ ! -d "$(NODE_PATH)" ]; then \
 		make deps; \
+		echo " $(RED)$(D) [$(GRN)Installing $(BLU)$(NAME)$(GRN) dependencies...$(D)]"; \
+		npm install; \
 		echo " $(RED)$(D) [$(GRN)Building $(BLU)$(NAME)$(GRN) Project...$(D)]"; \
 		npm run build; \
 	else \
 		echo " $(RED)$(D) [$(GRN)Project already built!$(D)]"; \
 	fi
 
-start: build		## Start Project
+dev: build		## Start Project
 	@echo " $(RED)$(D) [$(GRN)Starting $(BLU)$(NAME)$(GRN) dev server...$(D)]"; \
-	npm run start
+	npm run dev; \
+
+setup-vite:
+	@echo "$(YEL)Setting up $(BLU)Vite$(D)"
+	npm install --save-dev vite
 
 setup-typescript:
 	@echo "$(YEL)Setting up $(BLU)TypeScript$(D)"
@@ -79,7 +85,7 @@ setup-babylon:
 setup-tailwind:
 	@echo "$(YEL)Setting up $(RED)PostCSS$(D) for $(BLU)TailwindCSS$(D)"
 	npm install -D tailwindcss@3 postcss postcss-loader autoprefixer css-loader style-loader
-	?@if [ ! -f "tailwind.config.js" || ! -f "postcss.config.js" ]; then \
+	@if [[ ! -f "tailwind.config.js" || ! -f "postcss.config.js" ]]; then \
 		@echo "$(YEL)Setting up $(BLU)TailwindCSS$(D) config files"; \
 		npx tailwindcss init -p; \
 	fi
