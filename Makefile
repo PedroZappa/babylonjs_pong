@@ -51,12 +51,14 @@ deps: setup-typescript setup-babylon
 build:					## Build Project
 	@if [ ! -d "$(DIST_PATH)" ]; then \
 		make deps; \
+		echo " $(RED)$(D) [$(GRN)Building $(BLU)$(NAME)$(GRN) Project...$(D)]"; \
 		npm run build; \
 	else \
 		echo " $(RED)$(D) [$(GRN)Project already built!$(D)]"; \
 	fi
 
 start: build		## Start Project
+	@echo " $(RED)$(D) [$(GRN)Starting $(BLU)$(NAME)$(GRN) dev server...$(D)]"; \
 	npm run start
 
 setup-typescript:
@@ -71,20 +73,20 @@ setup-typescript:
 setup-babylon:
 	@echo "$(YEL)Setting up $(BLU)Babylon.js$(D)"
 	npm install --save-dev @babylonjs/core @babylonjs/addons @babylonjs/inspector
-	@echo "$(YEL)Setting up $(BLU)Raw-loader$(D) for loading HTML files"
+	@echo "$(YEL)Setting up $(BLU)Raw-loader$(D) & $(BLU)Html-loader$(D) for loading HTML files"
 	npm install --save-dev raw-loader html-loader
 
 ##@ Test Rules 🧪
 
 test_all:						## Run All tests
-	echo "Test!"
+	@echo "Test!"
 
 ##@ Debug Rules 
 
 
 ##@ Clean-up Rules
 
-clean: 				## Remove object files
+clean: 				## Remove
 	@echo "*** $(YEL)Removing $(MAG)$(NAME)$(D) and deps $(YEL)object files$(D)"
 	@if [ -d "$(NODE_PATH)" ] || [ -d "$(DIST_PATH)" ]; then \
 		if [ -d "$(NODE_PATH)" ]; then \
@@ -98,17 +100,6 @@ clean: 				## Remove object files
 	else \
 		echo " $(RED)$(D) [$(GRN)Nothing to clean!$(D)]"; \
 	fi
-
-fclean: clean			## Remove executable and .gdbinit
-	@if [ -d "node_modules" ]; then \
-		$(RM) $(DIST_PATH); \
-		$(RM) $(NODE_PATH); \
-		echo "* $(YEL)Removing $(CYA)$(NAME)$(D) file: $(_SUCCESS)"; \
-	else \
-		echo " $(RED)$(D) [$(GRN)Nothing to be fcleaned!$(D)]"; \
-	fi
-
-re: fclean all	## Purge & Recompile
 
 ##@ Help 󰛵
 
