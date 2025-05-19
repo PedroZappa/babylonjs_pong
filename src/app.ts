@@ -17,6 +17,7 @@ import {
   Animation,
   ActionManager,
   ExecuteCodeAction, 
+	SetValueAction,
   PointerEventTypes,
 } from "@babylonjs/core";
 import {
@@ -192,7 +193,7 @@ class App {
 
     // Main Menu
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv",
-      { captureOnPointerEnter: false, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
+      { captureOnPointerEnter: false, isCanvasOverlay: false, fitStrategy: FitStrategy.NONE });
     const div = document.createElement("div");
     div.innerHTML = this._mainMenuHTML
     // div.style.width = "200px";
@@ -439,6 +440,14 @@ class App {
       ? this._mainMenuTarget
       : this._pongTarget;
     this.animationCamera(this._currentTarget);
+
+		if (this._currentTarget === this._pongTarget) {
+			this._currentTarget = this._pongTarget;
+			this._camera.rotationQuaternion = this._pongTarget;
+		} else {
+			this._currentTarget = this._mainMenuTarget;
+			this._camera.rotationQuaternion = this._mainMenuTarget;
+		}
   }
 
 };

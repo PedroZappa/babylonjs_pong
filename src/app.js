@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import { Inspector, } from "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, FreeCamera, DynamicTexture, HemisphericLight, MeshBuilder, StandardMaterial, Vector3, Color3, Color4, UtilityLayerRenderer, Quaternion, Animation, } from "@babylonjs/core";
+import { Engine, Scene, FreeCamera, DynamicTexture, HemisphericLight, MeshBuilder, StandardMaterial, Vector3, Color3, Color4, UtilityLayerRenderer, Quaternion, Animation, ActionManager, ExecuteCodeAction, PointerEventTypes, } from "@babylonjs/core";
 import { GUI3DManager, } from "@babylonjs/gui";
 import { HtmlMeshRenderer, HtmlMesh, FitStrategy } from "@babylonjs/addons/htmlMesh";
 // HTML Content
@@ -15,7 +15,7 @@ try {
 catch (err) {
     console.error('Error loading HTML:', err);
 }
-import './tailwind.css'; // Add this at the top
+import './styles.css'; // Add this at the top
 class App {
     // Game State
     constructor() {
@@ -110,23 +110,13 @@ class App {
         this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
         this._belowPlane.position.y = -1; // Below the main plane
         // Main Menu
-        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv", { captureOnPointerEnter: true, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
+        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv", { captureOnPointerEnter: false, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
         const div = document.createElement("div");
         div.innerHTML = this._mainMenuHTML;
         // div.style.width = "200px";
         // div.style.height = "200px";
-        // div.style.backgroundColor = "purple";
-        // div.style.textAlign = 'center';
-        // div.style.fontSize = '100px';
-        // // div.style.padding = "20px";
-        // // div.style.color = "yellow";
-        // div.style.zIndex = "1000"; // Higher z-index
+        div.style.textAlign = 'center';
         htmlMeshDiv.setContent(div, 4, 2);
-        // Position/Scale/Rotate the mesh in your scene
-        // htmlMeshDiv.position = new Vector3(0, 0, 0);
-        // htmlMeshDiv.scaling = new Vector3(1, 1, 1);
-        // htmlMeshDiv.rotation = Quaternion.FromEulerAngles(0, 0, 0).toEulerAngles();
-        // htmlMeshDiv.rotation = Quaternion.FromEulerAngles((Math.PI), 0, Math.PI).toEulerAngles();
         const mainMenuPlaneMat = new StandardMaterial("mainMenuPlaneMat", this._scene);
         mainMenuPlaneMat.diffuseColor = new Color3(0, 0, 0); // Black
         mainMenuPlaneMat.alpha = 0; // Transparent
@@ -313,6 +303,28 @@ class App {
                 }
             }
         });
+        this._scene.onPointerObservable.add((pointerInfo) => {
+            if (pointerInfo.type === PointerEventTypes.POINTERPICK) {
+                const pick = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+                if (pick?.pickedMesh?.metadata?.isButton) {
+                    this._toggleCameraTarget();
+                }
+            }
+        });
+        this._mainMenuPlane.actionManager = new ActionManager(this._scene);
+        this._mainMenuPlane.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, (evt) => {
+            const pick = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+            console.log(pick);
+            if (pick?.pickedMesh?.metadata?.isButton) {
+                this._toggleCameraTarget();
+            }
+        }));
+    }
+    _toggleCameraTarget() {
+        this._currentTarget = this._currentTarget === this._pongTarget
+            ? this._mainMenuTarget
+            : this._pongTarget;
+        this.animationCamera(this._currentTarget);
     }
 }
 ;
