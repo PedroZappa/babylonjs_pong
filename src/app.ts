@@ -41,7 +41,7 @@ try {
 } catch (err) {
   console.error('Error loading HTML:', err);
 }
-import './styles.css'; // Add this at the top
+import './styles.css';
 
 
 class App {
@@ -193,12 +193,22 @@ class App {
 
     // Main Menu
     const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv",
-      { captureOnPointerEnter: false, isCanvasOverlay: false, fitStrategy: FitStrategy.NONE });
+      { captureOnPointerEnter: true, isCanvasOverlay: false, fitStrategy: FitStrategy.NONE });
     const div = document.createElement("div");
     div.innerHTML = this._mainMenuHTML
-    // div.style.width = "200px";
-    // div.style.height = "200px";
     div.style.textAlign = 'center';
+
+    // Add event listeners to HTML elements
+    const button = div.querySelector("#button");
+    if (button) {
+      button.addEventListener("click", () => {
+        console.log("Button clicked!");
+        // Interact with your scene
+        this._toggleCameraTarget();
+        // Or manipulate meshes
+        this._ball.position.y += 0.5;
+      });
+    }
 
     htmlMeshDiv.setContent(div, 4, 2);
 

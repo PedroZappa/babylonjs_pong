@@ -110,7 +110,7 @@ class App {
         this._belowPlane.rotation.x = Math.PI; // 180° around the X axis
         this._belowPlane.position.y = -1; // Below the main plane
         // Main Menu
-        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv", { captureOnPointerEnter: false, isCanvasOverlay: true, fitStrategy: FitStrategy.NONE });
+        const htmlMeshDiv = new HtmlMesh(this._scene, "htmlMeshDiv", { captureOnPointerEnter: false, isCanvasOverlay: false, fitStrategy: FitStrategy.NONE });
         const div = document.createElement("div");
         div.innerHTML = this._mainMenuHTML;
         // div.style.width = "200px";
@@ -325,6 +325,14 @@ class App {
             ? this._mainMenuTarget
             : this._pongTarget;
         this.animationCamera(this._currentTarget);
+        if (this._currentTarget === this._pongTarget) {
+            this._currentTarget = this._pongTarget;
+            this._camera.rotationQuaternion = this._pongTarget;
+        }
+        else {
+            this._currentTarget = this._mainMenuTarget;
+            this._camera.rotationQuaternion = this._mainMenuTarget;
+        }
     }
 }
 ;
